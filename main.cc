@@ -1,9 +1,12 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <math.h>
+#include <cstdio>
+#include <cstdint>
+#include <cstdlib>
+#include <cmath>
+
+extern "C" {
 #include "libpngio/pngio.h"
 #include "list.h"
+}
 
 #define BUF_SIZE 1024
 
@@ -30,8 +33,8 @@ struct draw_samples_state {
 };
 
 static void *draw_samples(void *h, void *ctx) {
-  samples_array *sa = h;
-  struct draw_samples_state *st = ctx;
+  samples_array *sa = (samples_array *)h;
+  struct draw_samples_state *st = (struct draw_samples_state *)ctx;
   //printf("n %zu/%zu; w %zu\n", sa->n_filled, sa->n_allocd, st->w);
   for (int i = 0; i < sa->n_filled; i++) {
     float v = logf(fabsf(sa->samples[i])) / st->maxAmplitude;
@@ -55,7 +58,7 @@ static list *array_list_read_file(FILE *fd, size_t bsize) {
   do {
     void *buf = malloc(bsize);
     n = fread(buf, 1, bsize, fd);
-    array *a = malloc(sizeof *a);
+    array *a = (array *)malloc(sizeof *a);
     *a = (array){n, buf};
     list_mutcons(a, &l);
   } while (n > 0);
@@ -63,8 +66,8 @@ static list *array_list_read_file(FILE *fd, size_t bsize) {
 }
 
 static void *array_list_length_fold(void *h, void *x) {
-  array *a = h;
-  size_t *len = x;
+  array *a = (array *)h;
+  size_t *len = (size_t *)x;
   *len += a->n;
   return x;
 }
@@ -99,15 +102,15 @@ int main(int argc, char const* argv[])
   size_t averagedSamples = 0;
 
   for (list *datx = dat; datx != NULL; (datx = datx->tail)) {
-    array *a = datx->head;
-    int32_t *buf = a->d;
+    array *a = (array *)datx->head;
+    int32_t *buf = (int32_t *)a->d;
     size_t n = a->n / sizeof *buf;
 
     if (n != BUF_SIZE) printf("buf %zu\n", n);
     for (size_t i = 0; i < n/2; i++, averagedSamples++) {
       if (!sa || sa->n_filled == sa->n_allocd) {
-        sa = malloc(sizeof *sa);
-        *sa = (samples_array){BUF_SIZE, 0, calloc(BUF_SIZE, sizeof(float))};
+        sa = (samples_array *)malloc(sizeof *sa);
+        *sa = (samples_array){BUF_SIZE, 0, (float *)calloc(BUF_SIZE, sizeof(float))};
         list_mutcons(sa, &sampleList);
       }
       float *currentSample = &sa->samples[sa->n_filled];
@@ -131,8 +134,8 @@ int main(int argc, char const* argv[])
 
   printf("max: %f\n", maxAmplitude);
 
-  size_t w = totalSamples, h = 200;
-  rgba *img = calloc(w*h, sizeof *img);
+  size_t w = totalSamples, h = 300;
+  rgba *img = (rgba *)calloc(w*h, sizeof *img);
   struct draw_samples_state st = {
     img, w, h, maxAmplitude, 0,
   };

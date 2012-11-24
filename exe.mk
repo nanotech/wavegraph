@@ -2,8 +2,8 @@ all: main
 
 OBJS = $(addsuffix .o,$(MODULES))
 
-main: Makefile main.c $(OBJS)
-	$(CC) $(CFLAGS) $(LIBS) $(filter-out Makefile,$^) -ldl -o $@
+main: Makefile main.cc $(OBJS)
+	$(CXX) $(CXXFLAGS) $(LIBS) $(filter-out Makefile,$^) -ldl -o $@
 
 clean:
 	rm -f $(OBJS)
