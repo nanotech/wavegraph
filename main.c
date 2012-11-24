@@ -89,8 +89,9 @@ static size_t array_list_length(list *l) {
 int main(int argc, char const* argv[])
 {
   list *dat = array_list_read_file(stdin, BUF_SIZE * sizeof(int32_t));
+  size_t datSize = array_list_length(dat) / sizeof(int32_t);
 
-  size_t window = 64;
+  size_t window = datSize / 800 / 2;
   list *sampleList = NULL;
   size_t totalSamples = 0;
   float maxAmplitude = 0;
@@ -130,7 +131,7 @@ int main(int argc, char const* argv[])
 
   printf("max: %f\n", maxAmplitude);
 
-  size_t w = totalSamples, h = 300;
+  size_t w = totalSamples, h = 200;
   rgba *img = calloc(w*h, sizeof *img);
   struct draw_samples_state st = {
     img, w, h, maxAmplitude, 0,
