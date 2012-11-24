@@ -12,6 +12,11 @@ typedef struct {
 } rgba;
 
 typedef struct {
+  size_t n;
+  void *d;
+} array;
+
+typedef struct {
   size_t n_allocd;
   size_t n_filled;
   float *samples;
@@ -44,21 +49,64 @@ static void free_samples_array(void *vsa) {
   free(((samples_array *)vsa)->samples);
 }
 
+static list *array_list_read_file(FILE *fd, size_t bsize) {
+  list *l = NULL;
+  size_t n;
+  do {
+    void *buf = malloc(bsize);
+    n = fread(buf, 1, bsize, fd);
+    array *a = malloc(sizeof *a);
+    *a = (array){n, buf};
+    list_mutcons(a, &l);
+  } while (n > 0);
+  return l;
+}
+
+static void *array_list_length_fold(void *h, void *x) {
+  array *a = h;
+  size_t *len = x;
+  *len += a->n;
+  return x;
+}
+
+static void array_list_free_data(void *x) {
+  free(((array *)x)->d);
+}
+
+static void array_list_free(list **l) {
+  list_mapM_(array_list_free_data, *l);
+  list_mapM_(free, *l);
+  list_freerec(*l);
+  *l = NULL;
+}
+
+static size_t array_list_length(list *l) {
+  size_t n;
+  list_foldl(array_list_length_fold, &n, l);
+  return n;
+}
+
 int main(int argc, char const* argv[])
 {
+  list *dat = array_list_read_file(stdin, BUF_SIZE * sizeof(int32_t));
+
   size_t window = 64;
-  int32_t *buf = malloc(BUF_SIZE * sizeof *buf);
   list *sampleList = NULL;
   size_t totalSamples = 0;
   float maxAmplitude = 0;
   samples_array *sa = NULL;
   size_t averagedSamples = 0;
-  for (size_t n; (n = fread(buf, sizeof *buf, BUF_SIZE, stdin));) {
+
+  for (list *datx = dat; datx != NULL; (datx = datx->tail)) {
+    array *a = datx->head;
+    int32_t *buf = a->d;
+    size_t n = a->n / sizeof *buf;
+
     if (n != BUF_SIZE) printf("buf %zu\n", n);
     for (size_t i = 0; i < n/2; i++, averagedSamples++) {
       if (!sa || sa->n_filled == sa->n_allocd) {
         sa = malloc(sizeof *sa);
-        *sa = (samples_array){BUF_SIZE, 0, malloc(BUF_SIZE * sizeof(float))};
+        *sa = (samples_array){BUF_SIZE, 0, calloc(BUF_SIZE, sizeof(float))};
         list_mutcons(sa, &sampleList);
       }
       float *currentSample = &sa->samples[sa->n_filled];
@@ -77,7 +125,9 @@ int main(int argc, char const* argv[])
       }
     }
   }
-  free(buf);
+  array_list_free(&dat);
+  dat = NULL;
+
   printf("max: %f\n", maxAmplitude);
 
   size_t w = totalSamples, h = 300;
