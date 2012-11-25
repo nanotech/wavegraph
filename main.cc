@@ -64,7 +64,7 @@ int main(int argc, char const* argv[])
   auto dat = read_file_chunked<int32_t>(stdin, BUF_SIZE);
   size_t datSize = array_list_length(dat);
 
-  size_t window = datSize / 800 / 2;
+  size_t window = datSize / 700 / 2;
   std::vector<float> samples;
   float maxAmplitude = 0;
   size_t averagedSamples = 0;
@@ -93,7 +93,7 @@ int main(int argc, char const* argv[])
 
   printf("max: %f\n", maxAmplitude);
 
-  size_t w = samples.size(), h = 300;
+  size_t w = samples.size(), h = 80;
   printf("%zu x %zu\n", w, h);
   auto img = draw_samples(samples, maxAmplitude, h);
   write_png_file((unsigned char *)img.data(), w, h, sizeof *img.data(), "out.png");
