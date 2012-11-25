@@ -96,7 +96,10 @@ int main(int argc, char const* argv[])
   size_t w = samples.size(), h = 80;
   printf("%zu x %zu\n", w, h);
   auto img = draw_samples(samples, maxAmplitude, h);
-  write_png_file((unsigned char *)img.data(), w, h, sizeof *img.data(), "out.png");
+
+  const char *outfile = argc == 2 ? argv[1] : "out.png";
+
+  write_png_file((unsigned char *)img.data(), w, h, sizeof *img.data(), outfile);
 
   return 0;
 }
