@@ -22,8 +22,15 @@ static std::vector<rgba> draw_samples(
   for (size_t i = 0; i < sa.size(); i++) {
     float v = (sa[i] == 0.0f) ? 0.0f : logf(fabsf(sa[i])) / maxAmplitude;
     size_t vh = size_t(v * h);
-    for (size_t y = h - vh; y < vh; y++) {
-      img[y*w + i] = rgba{0,0,0,255};
+    //for (size_t y = h - vh; y < vh; y++) {
+    //  img[y*w + i] = rgba{0,0,0,255};
+    //}
+    rgba c = {255,255,255,255};
+    for (size_t y = 0; y < h - vh; y++) {
+      img[y*w + i] = c;
+    }
+    for (size_t y = vh; y < h; y++) {
+      img[y*w + i] = c;
     }
   }
   return img;
