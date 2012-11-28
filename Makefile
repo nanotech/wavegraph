@@ -1,9 +1,9 @@
 CC ?= cc
 CXX ?= c++
 CFLAGS += -std=c99 -Wall -g
-CXXFLAGS += -std=c++11 -stdlib=libc++ -Wall -g
-LIBS = -lpng
+CXXFLAGS += -std=c++11 -stdlib=libc++ -Wall -g -O2
+LIBS = -lpng -lfftw3
 
-MODULES = libpngio/pngio
+MODULES = libpngio/pngio spectrogram
 
 include exe.mk
