@@ -144,6 +144,7 @@ int main(int argc, char const* argv[])
     size_t w = frequencies.size(), h = window / 4 * overlap;
     printf("%zu x %zu\n", w, h);
     auto img = draw_spectrogram(frequencies, maxAmplitude, w, h);
+    printf("writing png...\n");
     write_png_file((unsigned char *)img.data(), w, h, sizeof *img.data(), outfile);
   } else {
     size_t window = datSize / 700 / 2;
@@ -179,6 +180,7 @@ int main(int argc, char const* argv[])
     printf("%zu x %zu\n", w, h);
     auto img = draw_samples(samples, maxAmplitude, h);
 
+    printf("writing png...\n");
     write_png_file((unsigned char *)img.data(), w, h, sizeof *img.data(), outfile);
   }
 
