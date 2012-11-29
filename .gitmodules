@@ -1,0 +1,3 @@
+[submodule "libhue"]
+	path = libhue
+	url = https://github.com/nanotech/libhue.git

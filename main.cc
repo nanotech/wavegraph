@@ -8,13 +8,12 @@
 
 extern "C" {
 #include "libpngio/pngio.h"
+#include "libhue/libhue.h"
 }
 
 #define BUF_SIZE 1024
 
-typedef struct {
-    uint8_t r, g, b, a;
-} rgba;
+typedef hue_RGBA8 rgba;
 
 static std::vector<rgba> draw_samples(
     const std::vector<float> &sa, float maxAmplitude, size_t h)
@@ -47,7 +46,7 @@ static std::vector<rgba> draw_spectrogram(
     std::vector<std::vector<double>> &frequencies, double maxAmplitude,
     size_t w, size_t &h)
 {
-  size_t hs = 1;
+  size_t hs = 4;
   size_t ih = h/hs;
   std::vector<rgba> img(w*ih);
   for (size_t x=0; x<w; ++x) {
@@ -57,12 +56,12 @@ static std::vector<rgba> draw_spectrogram(
         printf("y2: %zu\n", y2);
         y2 = y;
       }
-      auto v = frequencies[x][y2] / maxAmplitude;
-      //auto v = lerp(frequencies[x], y2) / maxAmplitude;
+      //auto v = frequencies[x][y2] / maxAmplitude;
+      auto v = lerp(frequencies[x], y2) / maxAmplitude;
       if (v < 0 || v > 1 || v != v) {
         printf("v: %f\n", v);
       }
-      img[y*w + x] = rgba{0,uint8_t(v*255),uint8_t(v*255),255};
+      img[y*w + x] = hue_RGB_to_RGBA8(hue_HSL_to_RGB(hue_HSL{y/float(ih),0.7,float(v)}), 1.0);
     }
   }
   h = ih;
@@ -126,7 +125,7 @@ int main(int argc, char const* argv[])
     float maxAmplitude = 0;
     //for (auto &buf : dat) {
     size_t window = 1024*2;
-    size_t overlap = 4;
+    size_t overlap = 8;
     printf("n: %zu\n", samples.size());
     for (size_t k=0, n=samples.size()/window; k<n; ++k) {
       //printf("%zu-%zu\n", k*window, k*window + window*overlap);
