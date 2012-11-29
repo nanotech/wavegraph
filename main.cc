@@ -98,11 +98,11 @@ T foldl(F f, T acc, L l) { for (auto x : l) { acc = f(x, acc); } return acc; }
 
 template <typename T>
 static size_t array_list_length(const std::deque<std::vector<T>> &l) {
-  return foldl([](std::vector<T> v, size_t n){ return v.size() + n; }, size_t(0), l);
+  return foldl([](const std::vector<T> &v, size_t n){ return v.size() + n; }, size_t(0), l);
 }
 
 template <typename T>
-static std::vector<T> destride(std::vector<T> v, size_t stride, size_t offset) {
+static std::vector<T> destride(const std::vector<T> &v, size_t stride, size_t offset) {
   std::vector<T> o(v.size());
   for (size_t i=offset, n=v.size(); i < n; i += stride) {
     o[i] = v[i];
