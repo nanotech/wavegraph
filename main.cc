@@ -61,7 +61,7 @@ static std::vector<rgba> draw_spectrogram(
       if (v < 0 || v > 1 || v != v) {
         printf("v: %f\n", v);
       }
-      img[y*w + x] = hue_RGB_to_RGBA8(hue_HSL_to_RGB(hue_HSL{y/float(ih),0.7,float(v)}), 1.0);
+      img[y*w + x] = hue_RGB_to_RGBA8(hue_HSL_to_RGB(hue_HSL{float(v)*0.7f - 0.3f,0.7,float(v)*0.8f+0.15f}), 1.0);
     }
   }
   h = ih;
