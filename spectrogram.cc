@@ -20,7 +20,26 @@ static inline double hamming(double i, double n) {
   return 0.54 - (0.46 * cos(2 * M_PI * (i / ((n - 1) * 1.0))));
 }
 
-std::vector<double> spectrogram(std::vector<int32_t> &buf, size_t n, size_t offset) {
+spectrogram_plan::spectrogram_plan(size_t n_) {
+  n = n_;
+  size_t out_n = n/2 + 1;
+
+  in_data = (double *)fftw_malloc(n * sizeof(double));
+  out_data = (fftw_complex *)fftw_malloc(out_n * sizeof(fftw_complex));
+  plan = fftw_plan_dft_r2c_1d(n, in_data, out_data, FFTW_MEASURE);
+}
+
+spectrogram_plan::~spectrogram_plan() {
+  fftw_destroy_plan(plan);
+  fftw_free(out_data);
+  fftw_free(in_data);
+}
+
+std::vector<double> spectrogram(
+    const struct spectrogram_plan &plan,
+    std::vector<int32_t> &buf, size_t offset)
+{
+  size_t n = plan.n;
   size_t out_n = n/2 + 1;
   std::vector<double> frequencies(n/4);
   auto *bufp = &buf;
@@ -34,34 +53,20 @@ std::vector<double> spectrogram(std::vector<int32_t> &buf, size_t n, size_t offs
     return frequencies;
   }
 
-  auto fft_in = (double *)fftw_malloc(n * sizeof(double));
-  auto fft_out = (fftw_complex *)fftw_malloc(out_n * sizeof(fftw_complex));
-  //memset(fft_out, 0, out_n * sizeof *fft_out);
-
   map_with_index_into<double, int32_t>([=](int32_t x, size_t i){
       return (x / (double)INT32_MAX) * hamming(i, n);
-  }, n, &(*bufp)[0] + offset, fft_in);
-  fftw_plan plan = fftw_plan_dft_r2c_1d(n, fft_in, fft_out, FFTW_ESTIMATE);
+  }, n, &(*bufp)[0] + offset, plan.in_data);
 
-  fftw_execute(plan);
-  fftw_destroy_plan(plan);
-  fftw_free(fft_in); fft_in = NULL;
-
-  for (size_t i = 0; i < out_n; i++) {
-    //printf("%f x %fi\n", fft_out[i][0], fft_out[i][1]);
-  }
+  fftw_execute(plan.plan);
 
   for (size_t i = 1; i < out_n/2; i++) {
-    auto z = fft_out[i+out_n/2];
+    auto z = plan.out_data[i+out_n/2];
     frequencies[i-1] = magnitude(z[0], z[1]);
-    //printf("%f\n", frequencies[i-1]);
   }
 
   if (extendedBuf) {
     delete bufp;
   }
-
-  fftw_free(fft_out);
 
   return frequencies;
 }

@@ -126,10 +126,12 @@ int main(int argc, char const* argv[])
     //for (auto &buf : dat) {
     size_t window = 1024*2;
     size_t overlap = 8;
+    printf("planning...\n");
+    spectrogram_plan plan = spectrogram_plan(window*overlap);
     printf("n: %zu\n", samples.size());
     for (size_t k=0, n=samples.size()/window; k<n; ++k) {
       //printf("%zu-%zu\n", k*window, k*window + window*overlap);
-      auto freqs = spectrogram(samples, window*overlap, k*window);
+      auto freqs = spectrogram(plan, samples, k*window);
       //if (freqs.size() != BUF_SIZE/2) {
         //printf("skip: %zu != %zu\n", freqs.size(), BUF_SIZE/2);
         //continue;
