@@ -1,6 +1,6 @@
 CC ?= cc
 CXX ?= c++
-CFLAGS += -std=c99 -Wall -g
+CFLAGS += -std=c99 -Wall -g -O2
 CXXFLAGS += -std=c++11 -stdlib=libc++ -Wall -g -O2
 LIBS = -lpng -lfftw3
 
